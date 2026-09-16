@@ -1,9 +1,9 @@
 -- Crear la base de datos con codificación de caracteres UTF-8
-CREATE DATABASE IF NOT EXISTS club_deportivo2
+CREATE DATABASE IF NOT EXISTS club_deportivo
   DEFAULT CHARACTER SET utf8mb4
   DEFAULT COLLATE utf8mb4_unicode_ci;
 
-USE club_deportivo2;
+USE club_deportivo;
 
 -- Eliminar tablas si existen (en orden inverso a sus relaciones de clave foránea)
 DROP TABLE IF EXISTS bloqueos;

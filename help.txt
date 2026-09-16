@@ -4,7 +4,7 @@ Para activar el entorno virtual en tu terminal ejecutá:
 
 Para inicializar la base de datos de la API:
     sudo mysql
-        (en mysql):
+        (en mysql): #cambiar la pass del usuario root
         ALTER USER 'root'@'localhost' IDENTIFIED WITH caching_sha2_password BY 'root';
         FLUSH PRIVILEG;
         EXIT;
@@ -12,3 +12,6 @@ Para inicializar la base de datos de la API:
 
 Para iniciar el servidor Flask:
     python app.py
+
+A partir de aca, queda levantado el servicio
+Desde postman se le puede pegar a los endpoint que vayamos desarrollando
