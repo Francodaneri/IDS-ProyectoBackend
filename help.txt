@@ -6,7 +6,7 @@ Para inicializar la base de datos de la API:
     sudo mysql
         (en mysql): #cambiar la pass del usuario root
         ALTER USER 'root'@'localhost' IDENTIFIED WITH caching_sha2_password BY 'root';
-        FLUSH PRIVILEG;
+        FLUSH PRIVILEGES;
         EXIT;
     mysql -u root -p < init_db.sql
 

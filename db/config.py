@@ -1,5 +1,8 @@
 import os
+from dotenv import load_dotenv
 
+# 1. Abre y carga en memoria las variables definidas en el archivo .env
+load_dotenv()
 # Configuración de conexión a la base de datos SQL (MySQL)
 # Se leen variables de entorno con valores por defecto para desarrollo local.
 DB_HOST = os.getenv('DB_HOST', 'localhost')
