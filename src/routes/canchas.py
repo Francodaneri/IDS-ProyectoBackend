@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from urllib.parse import urlencode
-from repositories.canchas_repository import (
+from src.repositories.canchas_repository import (
     obtener_canchas_db,
     existe_deporte_db,
     crear_cancha_db

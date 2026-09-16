@@ -1,5 +1,5 @@
 import pymysql
-from config import DB_CONFIG  # Archivo de configuración con parámetros de conexión
+from db.config import DB_CONFIG  # Archivo de configuración con parámetros de conexión
 
 def obtener_deportes_desde_db():
     """

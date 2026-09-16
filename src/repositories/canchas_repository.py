@@ -1,5 +1,5 @@
 import pymysql
-from config import DB_CONFIG  # Archivo de configuración con parámetros de conexión
+from db.config import DB_CONFIG  # Archivo de configuración con parámetros de conexión
 
 def obtener_canchas_db(id_deporte=None, nombre=None, techada=None, activa=None, limit=10, offset=0):
     """

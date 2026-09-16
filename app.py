@@ -1,6 +1,6 @@
 from flask import Flask
-from routes.deportes import deportes_bp
-from routes.canchas import canchas_bp
+from src.routes.deportes import deportes_bp
+from src.routes.canchas import canchas_bp
 
 app = Flask(__name__)
 
