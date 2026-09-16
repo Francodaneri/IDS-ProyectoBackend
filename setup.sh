@@ -1,17 +1,33 @@
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=root
+DB_NAME=club_deportivo
+Verificación explícita de Flask: Agrega una prueba en Python (python3 -c "import flask") para confirmar que Flask quedó correctamente instalado e importable en el entorno virtual.
+Instalación de python3-venv: En sistemas Linux/Ubuntu donde falta el paquete python3-venv, lo detecta e instala automáticamente antes de intentar crear la carpeta venv/.
+Código de setup-v4.sh
 #!/bin/bash
 
-# Detener la ejecución si ocurre algún error no controlado en la parte de Python
+# Detener la ejecución si ocurre algún error no controlado
 set -e
 
 echo "=== Configurando el entorno para Club Deportivo Backend ==="
 
-# 1. Verificar instalación de Python 3
+# 1. Verificar instalación de Python 3 y herramientas de venv
 if ! command -v python3 &> /dev/null; then
     echo "Error: Python 3 no está instalado en el sistema."
     exit 1
 fi
 
 echo "Python 3 detectado: $(python3 --version)"
+
+# En Debian/Ubuntu, asegurar que python3-venv y python3-pip estén disponibles
+if command -v apt-get &> /dev/null; then
+    if ! python3 -m venv --help &> /dev/null; then
+        echo "Instalando módulo python3-venv..."
+        sudo apt-get update && sudo apt-get install -y python3-venv python3-pip
+    fi
+fi
 
 # 2. Verificar e instalar MySQL / MariaDB Server si es necesario
 echo "----------------------------------------------------------"
@@ -50,7 +66,6 @@ if command -v mysqladmin &> /dev/null; then
         fi
     fi
     
-    # Comprobar nuevamente tras el intento de inicio
     if mysqladmin ping -u root --silent &> /dev/null; then
         echo "Servicio MySQL: En ejecución y listo para recibir conexiones."
     else
@@ -69,7 +84,7 @@ else
     echo "El entorno virtual '$VENV_DIR' ya existe."
 fi
 
-# 4. Activar el entorno virtual
+# 4. Activar el entorno virtual para las operaciones del script
 echo "Activando entorno virtual..."
 source $VENV_DIR/bin/activate
 
@@ -77,7 +92,7 @@ source $VENV_DIR/bin/activate
 echo "Actualizando pip..."
 pip install --upgrade pip
 
-# 6. Generar requirements.txt base si no existe
+# 6. Generar requirements.txt si no existe
 if [ ! -f "requirements.txt" ]; then
     echo "Generando requirements.txt..."
     cat <<EOF > requirements.txt
@@ -91,10 +106,35 @@ fi
 echo "Instalando dependencias desde requirements.txt..."
 pip install -r requirements.txt
 
+# 8. Verificación explícita de Flask
+echo "Verificando instalación de Flask..."
+if python3 -c "import flask; print(f'Flask {flask.__version__} instalado correctamente')" &> /dev/null; then
+    FLASK_VER=$(python3 -c "import flask; print(flask.__version__)")
+    echo "✔ Flask versión $FLASK_VER verificado en el entorno virtual."
+else
+    echo "❌ Error: Flask no se pudo importar dentro del entorno virtual."
+    exit 1
+fi
+
+# 9. Crear archivo .env si no existe
+if [ ! -f ".env" ]; then
+    echo "Creando archivo de configuración de variables de entorno (.env)..."
+    cat <<EOF > .env
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=root
+DB_NAME=club_deportivo
+EOF
+    echo "✔ Archivo .env generado con credenciales por defecto."
+else
+    echo "El archivo .env ya existe."
+fi
+
 echo ""
 echo "=========================================================="
-echo "¡Configuración e instalación completada!"
-echo "Para activar el entorno virtual ejecuta:"
+echo "¡Configuración e instalación completada con éxito!"
+echo "Para activar el entorno virtual en tu terminal ejecutá:"
 echo "    source venv/bin/activate"
 echo ""
 echo "Para inicializar la base de datos de la API:"
