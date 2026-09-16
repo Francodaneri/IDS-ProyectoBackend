@@ -1,0 +1,19 @@
+club_deportivo_backend/
+├── app.py                  # Punto de entrada: crea la app Flask y registra los Blueprints
+├── config.py               # Configuración de base de datos y variables de entorno
+├── init_db.sql             # Script SQL de inicialización y datos de carga inicial [2]
+├── requirements.txt        # Dependencias del proyecto [3]
+│
+├── routes/                 # Capa HTTP (Controladores / Blueprints)
+│   ├── deportes.py         # GET /deportes [4]
+│   ├── canchas.py          # GET, POST, PATCH, DELETE /canchas y /canchas/disponibles [4-6]
+│   ├── socios.py           # GET, POST, PATCH /socios [7, 8]
+│   └── reservas.py         # GET, POST /reservas y PUT /reservas/{id}/estado [8-10]
+│
+├── services/               # Capa de Lógica de Negocio (Validaciones de horario, superposiciones y cálculo de montos) [9, 11]
+│   ├── cancha_service.py
+│   └── reserva_service.py
+│
+└── repositories/           # Capa de Acceso a Datos (Consultas SQL a la base de datos) [1]
+    ├── cancha_repository.py
+    └── reserva_repository.py

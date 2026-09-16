@@ -1,0 +1,15 @@
+from flask import Flask
+from routes.deportes import deportes_bp
+from routes.canchas import canchas_bp
+
+app = Flask(__name__)
+
+app.register_blueprint(deportes_bp)
+app.register_blueprint(canchas_bp)
+
+# Configuración para que Flask no escape acentos ni caracteres especiales
+app.json.ensure_ascii = False  # Para Flask 2.3+ o 3.x
+# app.config['JSON_AS_ASCII'] = False  # Para versiones de Flask anteriores a 2.3
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)
