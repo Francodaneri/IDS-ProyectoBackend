@@ -1,11 +1,3 @@
-DB_HOST=localhost
-DB_PORT=3306
-DB_USER=root
-DB_PASSWORD=root
-DB_NAME=club_deportivo
-Verificación explícita de Flask: Agrega una prueba en Python (python3 -c "import flask") para confirmar que Flask quedó correctamente instalado e importable en el entorno virtual.
-Instalación de python3-venv: En sistemas Linux/Ubuntu donde falta el paquete python3-venv, lo detecta e instala automáticamente antes de intentar crear la carpeta venv/.
-Código de setup-v4.sh
 #!/bin/bash
 
 # Detener la ejecución si ocurre algún error no controlado
@@ -23,7 +15,7 @@ echo "Python 3 detectado: $(python3 --version)"
 
 # En Debian/Ubuntu, asegurar que python3-venv y python3-pip estén disponibles
 if command -v apt-get &> /dev/null; then
-    if ! python3 -m venv --help &> /dev/null; then
+    if ! python3 -m venv --help &> /dev/null || ! python3 -c "import ensurepip" &> /dev/null; then
         echo "Instalando módulo python3-venv..."
         sudo apt-get update && sudo apt-get install -y python3-venv python3-pip
     fi
@@ -75,13 +67,14 @@ if command -v mysqladmin &> /dev/null; then
 fi
 echo "----------------------------------------------------------"
 
-# 3. Crear el entorno virtual (venv) si no existe
+# 3. Crear el entorno virtual (venv) si no existe o si está incompleto
 VENV_DIR="venv"
-if [ ! -d "$VENV_DIR" ]; then
+if [ ! -f "$VENV_DIR/bin/activate" ]; then
     echo "Creando entorno virtual '$VENV_DIR'..."
+    rm -rf "$VENV_DIR"
     python3 -m venv $VENV_DIR
 else
-    echo "El entorno virtual '$VENV_DIR' ya existe."
+    echo "El entorno virtual '$VENV_DIR' ya está configurado."
 fi
 
 # 4. Activar el entorno virtual para las operaciones del script
