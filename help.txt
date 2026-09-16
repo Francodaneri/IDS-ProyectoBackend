@@ -1,0 +1,14 @@
+¡Configuración e instalación completada con éxito!
+Para activar el entorno virtual en tu terminal ejecutá:
+    source venv/bin/activate
+
+Para inicializar la base de datos de la API:
+    sudo mysql
+        (en mysql):
+        ALTER USER 'root'@'localhost' IDENTIFIED WITH caching_sha2_password BY 'root';
+        FLUSH PRIVILEG;
+        EXIT;
+    mysql -u root -p < init_db.sql
+
+Para iniciar el servidor Flask:
+    python app.py

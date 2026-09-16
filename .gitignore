@@ -1,0 +1,13 @@
+# Archivos de configuración con contraseñas y datos sensibles
+.env
+
+# Entornos virtuales de Python
+venv/
+.venv/
+env/
+
+# Archivos de caché y compilados de Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd

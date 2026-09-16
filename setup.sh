@@ -15,7 +15,7 @@ echo "Python 3 detectado: $(python3 --version)"
 
 # En Debian/Ubuntu, asegurar que python3-venv y python3-pip estén disponibles
 if command -v apt-get &> /dev/null; then
-    if ! python3 -m venv --help &> /dev/null || ! python3 -c "import ensurepip" &> /dev/null; then
+    if ! python3 -m venv --help &> /dev/null; then
         echo "Instalando módulo python3-venv..."
         sudo apt-get update && sudo apt-get install -y python3-venv python3-pip
     fi
@@ -67,25 +67,20 @@ if command -v mysqladmin &> /dev/null; then
 fi
 echo "----------------------------------------------------------"
 
-# 3. Crear el entorno virtual (venv) si no existe o si está incompleto
+# 3. Crear o reparar el entorno virtual (venv)
 VENV_DIR="venv"
-if [ ! -f "$VENV_DIR/bin/activate" ]; then
+if [ ! -d "$VENV_DIR" ] || [ ! -f "$VENV_DIR/bin/activate" ] || [ ! -f "$VENV_DIR/bin/python3" ]; then
     echo "Creando entorno virtual '$VENV_DIR'..."
     rm -rf "$VENV_DIR"
     python3 -m venv $VENV_DIR
 else
-    echo "El entorno virtual '$VENV_DIR' ya está configurado."
+    echo "El entorno virtual '$VENV_DIR' ya existe y está activo."
 fi
 
-# 4. Activar el entorno virtual para las operaciones del script
-echo "Activando entorno virtual..."
+# 4. Activar el entorno virtual para la sesión del script
 source $VENV_DIR/bin/activate
 
-# 5. Actualizar pip
-echo "Actualizando pip..."
-pip install --upgrade pip
-
-# 6. Generar requirements.txt si no existe
+# 5. Generar requirements.txt si no existe
 if [ ! -f "requirements.txt" ]; then
     echo "Generando requirements.txt..."
     cat <<EOF > requirements.txt
@@ -95,21 +90,24 @@ python-dotenv>=1.0.0
 EOF
 fi
 
-# 7. Instalar dependencias requeridas
-echo "Instalando dependencias desde requirements.txt..."
-pip install -r requirements.txt
+# 6. Actualizar pip e instalar dependencias usando explícitamente el ejecutable del venv
+echo "Actualizando pip dentro del venv..."
+./venv/bin/python3 -m pip install --upgrade pip
 
-# 8. Verificación explícita de Flask
+echo "Instalando dependencias desde requirements.txt..."
+./venv/bin/python3 -m pip install -r requirements.txt
+
+# 7. Verificación explícita e instalación de respaldo de Flask
 echo "Verificando instalación de Flask..."
-if python3 -c "import flask; print(f'Flask {flask.__version__} instalado correctamente')" &> /dev/null; then
-    FLASK_VER=$(python3 -c "import flask; print(flask.__version__)")
-    echo "✔ Flask versión $FLASK_VER verificado en el entorno virtual."
+if ./venv/bin/python3 -c "import flask; print(f'Flask {flask.__version__} instalado correctamente')" 2>/dev/null; then
+    echo "✔ Flask verificado con éxito dentro de venv."
 else
-    echo "❌ Error: Flask no se pudo importar dentro del entorno virtual."
-    exit 1
+    echo "Reintentando instalación directa de Flask..."
+    ./venv/bin/python3 -m pip install Flask PyMySQL python-dotenv
+    ./venv/bin/python3 -c "import flask; print(f'Flask {flask.__version__} instalado correctamente')"
 fi
 
-# 9. Crear archivo .env si no existe
+# 8. Crear archivo .env si no existe
 if [ ! -f ".env" ]; then
     echo "Creando archivo de configuración de variables de entorno (.env)..."
     cat <<EOF > .env
