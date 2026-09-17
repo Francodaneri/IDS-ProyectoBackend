@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify
+from src.utils.utils import (generar_respuesta_error,construir_links_hateoas)
 from src.repositories.deporte_repository import obtener_deportes_desde_db
 
 deportes_bp = Blueprint('deportes', __name__)
@@ -11,13 +12,9 @@ def listar_deportes():
         return jsonify({"deportes": deportes}), 200
     except Exception as e:
         # Devuelve la estructura de error estandarizada 500 Internal Server Error
-        return jsonify({
-            "errors": [
-                {
-                    "code": "ERROR_INTERNO",
-                    "message": "Error al obtener la lista de deportes",
-                    "level": "error",
-                    "description": str(e)
-                }
-            ]
-        }), 500
+        return generar_respuesta_error(
+                    "ERROR_INTERNO",
+                    "Error al obtener la lista de deportes",
+                    str(e),
+                    500
+                )
