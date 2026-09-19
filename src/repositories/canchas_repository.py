@@ -84,3 +84,56 @@ def crear_cancha_db(nombre, id_deporte, precio_hora, techada=False, activa=True)
             return cursor.lastrowid
     finally:
         connection.close()
+
+
+def obtener_cancha_por_id_db(cancha_id: int) -> dict | None:
+    conn = pymysql.connect(**DB_CONFIG, cursorclass=pymysql.cursors.DictCursor)
+    try:
+        with conn.cursor() as cursor:
+            sql = "SELECT id, nombre, id_deporte, precio_hora, techada, activa FROM canchas WHERE id = %s;"
+            cursor.execute(sql, (cancha_id,))
+            cancha = cursor.fetchone()
+            if cancha:
+                # Convertir enteros de MySQL a booleans
+                cancha['techada'] = bool(cancha['techada'])
+                cancha['activa'] = bool(cancha['activa'])
+            return cancha
+    finally:
+        conn.close()
+
+
+def actualizar_cancha_db(cancha_id: int, datos: dict) -> None:
+    if not datos:
+        return
+    conn = pymysql.connect(**DB_CONFIG)
+    try:
+        with conn.cursor() as cursor:
+            campos = [f"{clave} = %s" for clave in datos.keys()]
+            valores = list(datos.values())
+            valores.append(cancha_id)
+            sql = f"UPDATE canchas SET {', '.join(campos)} WHERE id = %s;"
+            cursor.execute(sql, valores)
+    finally:
+        conn.close()
+
+
+def cancha_tiene_reservas_db(cancha_id: int) -> bool:
+    """Verifica si la cancha tiene al menos una reserva asociada en la DB [2]."""
+    conn = pymysql.connect(**DB_CONFIG)
+    try:
+        with conn.cursor() as cursor:
+            sql = "SELECT 1 FROM reservas WHERE id_cancha = %s LIMIT 1;"
+            cursor.execute(sql, (cancha_id,))
+            return cursor.fetchone() is not None
+    finally:
+        conn.close()
+
+
+def eliminar_cancha_db(cancha_id: int) -> None:
+    conn = pymysql.connect(**DB_CONFIG)
+    try:
+        with conn.cursor() as cursor:
+            sql = "DELETE FROM canchas WHERE id = %s;"
+            cursor.execute(sql, (cancha_id,))
+    finally:
+        conn.close()

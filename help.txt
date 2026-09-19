@@ -8,7 +8,7 @@ Para inicializar la base de datos de la API:
         ALTER USER 'root'@'localhost' IDENTIFIED WITH caching_sha2_password BY 'root';
         FLUSH PRIVILEGES;
         EXIT;
-    mysql -u root -p < init_db.sql
+    mysql -u root -p < db/init_db.sql
 
 Para iniciar el servidor Flask:
     python app.py

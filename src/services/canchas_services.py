@@ -33,3 +33,58 @@ def crear_cancha_service(nombre: str, id_deporte: int, precio_hora: int, techada
         activa=activa
     )
     return cancha_id
+
+from src.repositories.canchas_repository import (
+    obtener_cancha_por_id_db,
+    actualizar_cancha_db,
+    cancha_tiene_reservas_db,
+    eliminar_cancha_db
+)
+
+class RecursoNoEncontradoError(Exception):
+    """Excepción cuando el recurso no existe en la base de datos (HTTP 404)."""
+    pass
+
+class ConflictoNegocioError(Exception):
+    """Excepción cuando una regla de negocio impide la operación (HTTP 409)."""
+    pass
+
+
+def obtener_cancha_por_id_service(cancha_id: int) -> dict:
+    """Obtiene los datos de una cancha específica por su ID [1]."""
+    cancha = obtener_cancha_por_id_db(cancha_id)
+    if not cancha:
+        raise RecursoNoEncontradoError(f"No existe ninguna cancha con id {cancha_id}.")
+    return cancha
+
+
+def actualizar_cancha_service(cancha_id: int, datos_actualizacion: dict) -> None:
+    """
+    Actualiza parcialmente una cancha si existe [1].
+    Cambiar la tarifa no modifica el importe de las reservas ya registradas [1].
+    """
+    cancha = obtener_cancha_por_id_db(cancha_id)
+    if not cancha:
+        raise RecursoNoEncontradoError(f"No existe ninguna cancha con id {cancha_id}.")
+
+    actualizar_cancha_db(cancha_id, datos_actualizacion)
+
+
+def eliminar_cancha_service(cancha_id: int) -> None:
+    """
+    Elimina una cancha únicamente si no posee ninguna reserva asociada [2].
+    Si tiene reservas, lanza ConflictoNegocioError para responder HTTP 409 Conflict [2, 3].
+    """
+    cancha = obtener_cancha_por_id_db(cancha_id)
+    if not cancha:
+        raise RecursoNoEncontradoError(f"No existe ninguna cancha con id {cancha_id}.")
+
+    if cancha_tiene_reservas_db(cancha_id):
+        raise ConflictoNegocioError(
+            "La cancha tiene reservas asociadas y no se puede eliminar. "
+            "Puede desactivarse mediante PATCH actualizando activa=false."
+        )
+
+    eliminar_cancha_db(cancha_id)
+
+    
