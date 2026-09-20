@@ -14,7 +14,6 @@ def generar_respuesta_error(code, message, description, status_code):
         ]
     }), status_code
 
-
 def construir_links_hateoas(base_url, query_params, total, limit, offset):
     """Genera el objeto _links con navegación HATEOAS (_first, _prev, _next, _last)."""
     def make_url(new_offset):

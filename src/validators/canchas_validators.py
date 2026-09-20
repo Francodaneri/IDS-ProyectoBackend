@@ -32,7 +32,6 @@ def validar_filtros_listar_canchas(args: dict) -> tuple[dict, str | None]:
     }
     return filtros, None
 
-
 def validar_body_crear_cancha(data: dict) -> tuple[dict, str | None]:
     """
     Valida la estructura y restricciones del cuerpo JSON para la creación de una cancha [4-6].
@@ -76,7 +75,6 @@ def validar_id_recurso(recurso_id: int) -> tuple[bool, str | None]:
     if not isinstance(recurso_id, int) or recurso_id <= 0:
         return False, "El identificador del recurso debe ser un entero positivo."
     return True, None
-
 
 def validar_body_actualizar_cancha(data: dict) -> tuple[dict, str | None]:
     """

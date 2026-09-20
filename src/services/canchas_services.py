@@ -1,7 +1,19 @@
-from src.repositories.canchas_repository import obtener_canchas_db, existe_deporte_db, crear_cancha_db
+from src.repositories.canchas_repository import (
+    obtener_canchas_db,
+    existe_deporte_db,
+    crear_cancha_db,
+    obtener_cancha_por_id_db,
+    actualizar_cancha_db,
+    cancha_tiene_reservas_db,
+    eliminar_cancha_db
+)
 
 class RecursoNoEncontradoError(Exception):
     """Excepción de negocio cuando no existe una entidad relacionada"""
+    pass
+
+class ConflictoNegocioError(Exception):
+    """Excepción cuando una regla de negocio impide la operación (HTTP 409)."""
     pass
 
 def listar_canchas_service(limit: int, offset: int, id_deporte: int = None, nombre: str = None, techada: bool = None, activa: bool = None):
@@ -34,29 +46,12 @@ def crear_cancha_service(nombre: str, id_deporte: int, precio_hora: int, techada
     )
     return cancha_id
 
-from src.repositories.canchas_repository import (
-    obtener_cancha_por_id_db,
-    actualizar_cancha_db,
-    cancha_tiene_reservas_db,
-    eliminar_cancha_db
-)
-
-class RecursoNoEncontradoError(Exception):
-    """Excepción cuando el recurso no existe en la base de datos (HTTP 404)."""
-    pass
-
-class ConflictoNegocioError(Exception):
-    """Excepción cuando una regla de negocio impide la operación (HTTP 409)."""
-    pass
-
-
 def obtener_cancha_por_id_service(cancha_id: int) -> dict:
     """Obtiene los datos de una cancha específica por su ID [1]."""
     cancha = obtener_cancha_por_id_db(cancha_id)
     if not cancha:
         raise RecursoNoEncontradoError(f"No existe ninguna cancha con id {cancha_id}.")
     return cancha
-
 
 def actualizar_cancha_service(cancha_id: int, datos_actualizacion: dict) -> None:
     """
@@ -68,7 +63,6 @@ def actualizar_cancha_service(cancha_id: int, datos_actualizacion: dict) -> None
         raise RecursoNoEncontradoError(f"No existe ninguna cancha con id {cancha_id}.")
 
     actualizar_cancha_db(cancha_id, datos_actualizacion)
-
 
 def eliminar_cancha_service(cancha_id: int) -> None:
     """

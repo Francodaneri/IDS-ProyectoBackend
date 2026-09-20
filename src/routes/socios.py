@@ -33,7 +33,6 @@ def listar_socios():
     except Exception as e:
         return generar_respuesta_error("ERROR_INTERNO", "Error del servidor", str(e), 500)
 
-
 @socios_bp.route('/socios', methods=['POST'])
 def crear_socio():
     try:
@@ -61,7 +60,6 @@ def crear_socio():
     except Exception as e:
         return generar_respuesta_error("ERROR_INTERNO", "Error al crear el socio", str(e), 500)
 
-
 @socios_bp.route('/socios/<int:socio_id>', methods=['GET'])
 def obtener_socio_id(socio_id: int):
     try:
@@ -81,7 +79,6 @@ def obtener_socio_id(socio_id: int):
     except Exception as e:
         return generar_respuesta_error("ERROR_INTERNO", "Error al buscar Socio", str(e), 500)
 
-
 @socios_bp.route('/socios/<int:socio_id>', methods=['PATCH'])
 def actualizar_socio_id(socio_id: int):
     try:
@@ -93,7 +90,7 @@ def actualizar_socio_id(socio_id: int):
             return generar_respuesta_error("ERROR_VALIDACION", "Actualización inválida", error_msg, 400)
 
         # 2. Invocar servicio
-        actualizar_socio_service(socio_id, datos_actualizar)
+        actualizar_socio_id_service(socio_id, datos_actualizar)
 
         # 3. Responder 204 No Content sin cuerpo
         return "", 204

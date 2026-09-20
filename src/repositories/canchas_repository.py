@@ -59,7 +59,6 @@ def obtener_canchas_db(id_deporte=None, nombre=None, techada=None, activa=None, 
     finally:
         connection.close()
 
-
 def existe_deporte_db(id_deporte):
     """Verifica si un deporte existe en la base de datos."""
     connection = pymysql.connect(**DB_CONFIG, cursorclass=pymysql.cursors.DictCursor)
@@ -69,7 +68,6 @@ def existe_deporte_db(id_deporte):
             return cursor.fetchone() is not None
     finally:
         connection.close()
-
 
 def crear_cancha_db(nombre, id_deporte, precio_hora, techada=False, activa=True):
     """Inserta una nueva cancha y retorna el id asignado."""
@@ -84,7 +82,6 @@ def crear_cancha_db(nombre, id_deporte, precio_hora, techada=False, activa=True)
             return cursor.lastrowid
     finally:
         connection.close()
-
 
 def obtener_cancha_por_id_db(cancha_id: int) -> dict | None:
     conn = pymysql.connect(**DB_CONFIG, cursorclass=pymysql.cursors.DictCursor)
@@ -101,7 +98,6 @@ def obtener_cancha_por_id_db(cancha_id: int) -> dict | None:
     finally:
         conn.close()
 
-
 def actualizar_cancha_db(cancha_id: int, datos: dict) -> None:
     if not datos:
         return
@@ -113,9 +109,10 @@ def actualizar_cancha_db(cancha_id: int, datos: dict) -> None:
             valores.append(cancha_id)
             sql = f"UPDATE canchas SET {', '.join(campos)} WHERE id = %s;"
             cursor.execute(sql, valores)
+
+        conn.commit()
     finally:
         conn.close()
-
 
 def cancha_tiene_reservas_db(cancha_id: int) -> bool:
     """Verifica si la cancha tiene al menos una reserva asociada en la DB [2]."""
@@ -127,7 +124,6 @@ def cancha_tiene_reservas_db(cancha_id: int) -> bool:
             return cursor.fetchone() is not None
     finally:
         conn.close()
-
 
 def eliminar_cancha_db(cancha_id: int) -> None:
     conn = pymysql.connect(**DB_CONFIG)

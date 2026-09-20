@@ -37,7 +37,6 @@ def listar_canchas():
     except Exception as e:
         return generar_respuesta_error("ERROR_INTERNO", "Error del servidor", str(e), 500)
 
-
 @canchas_bp.route('/canchas', methods=['POST'])
 def crear_cancha():
     try:
@@ -65,7 +64,6 @@ def crear_cancha():
     except Exception as e:
         return generar_respuesta_error("ERROR_INTERNO", "Error al crear la cancha", str(e), 500)
 
-
 @canchas_bp.route('/canchas/<int:cancha_id>', methods=['GET'])
 def obtener_cancha(cancha_id: int):
     try:
@@ -84,7 +82,6 @@ def obtener_cancha(cancha_id: int):
         return generar_respuesta_error("RECURSO_NO_ENCONTRADO", "Cancha no encontrada", str(e), 404)
     except Exception as e:
         return generar_respuesta_error("ERROR_INTERNO", "Error al obtener la cancha", str(e), 500)
-
 
 @canchas_bp.route('/canchas/<int:cancha_id>', methods=['PATCH'])
 def actualizar_cancha(cancha_id: int):
@@ -106,7 +103,6 @@ def actualizar_cancha(cancha_id: int):
         return generar_respuesta_error("RECURSO_NO_ENCONTRADO", "Cancha no encontrada", str(e), 404)
     except Exception as e:
         return generar_respuesta_error("ERROR_INTERNO", "Error al actualizar la cancha", str(e), 500)
-
 
 @canchas_bp.route('/canchas/<int:cancha_id>', methods=['DELETE'])
 def eliminar_cancha(cancha_id: int):
