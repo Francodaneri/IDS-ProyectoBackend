@@ -1,37 +1,39 @@
-from src.repositories.socios_repository import obtener_socios_db, existe_socio_db, crear_socio_db
+from src.repositories.socios_repository import obtener_socios_db, existe_socio_db, crear_socio_db, obtener_socio_por_id_db
 
 class RecursoNoEncontradoError(Exception):
-    """Excepción de negocio cuando no existe una entidad relacionada [4]."""
+    """Excepción de negocio cuando no existe una entidad relacionada."""
     pass
 
-def listar_socios_service(limit: int, offset: int, nombre: str = None,):
+def listar_socios_service(limit: int, offset: int, nombre: str, activo: bool):
     """
-    Orquesta la obtención paginada de las canchas desde la base de datos [3, 5].
+    Orquesta la obtención paginada de los socios desde la base de datos.
     """
     socios, total = obtener_socios_db(
-        id_socios=id_socios,
         nombre=nombre,
+        activo=activo,
         limit=limit,
         offset=offset
     )
     return socios, total
 
-def crear_socio_service(nombre: str, id_socios: int,) -> int:
+def crear_socio_service(nombre: str, email: str, activo: bool) -> int:
     """
-    Valida la existencia del socio y delega la creación en el repositorio [4, 6].
+    Valida la existencia del socio y delega la creación en el repositorio.
     """
-    if not existe_socio_db(id_socios):
-        raise RecursoNoEncontradoError(f"No existe ningún socio registrado con id {id_socios}.")
 
-    socios_id= crear_socios_db(
+    if existe_socio_db(email):
+        raise ConflictoNegocioError(f"El email '{email}' ya se encuentra registrado.")
+
+    socio_id= crear_socio_db(
         nombre=nombre,
-        id_socios=id_socios,
+        email=email,
+        activo=activo
     )
     return socio_id
 
 from src.repositories.socios_repository import (
     obtener_socios_por_id_db,
-    actualizar_socios_db,
+    actualizar_socios_db
 )
 
 class RecursoNoEncontradoError(Exception):
@@ -44,20 +46,22 @@ class ConflictoNegocioError(Exception):
 
 
 def obtener_socio_por_id_service(socio_id: int) -> dict:
-    """Obtiene los datos de un socio específico por su ID [1]."""
-    socio = obtener_socio_por_id_db(cancha_id)
-    if not cancha:
-        raise RecursoNoEncontradoError(f"No existe ninguna cancha con id {cancha_id}.")
-    return cancha
+    """Obtiene los datos de un socio específico por su ID."""
+    socio = obtener_socio_por_id_db(socio_id)
+    if not socio:
+        raise RecursoNoEncontradoError(f"No existe ninguna socio con id {socio_id}.")
+    return socio
 
 
 def actualizar_socio_id_service(socio_id: int, datos_actualizacion: dict) -> None:
-    """
-    Actualiza parcialmente un socio si existe [1].
-    
-    """
-    socio = obtener_socio_por_id_db(oc_id)
-    if not cancha:
-        raise RecursoNoEncontradoError(f"No existe ninguna cancha con id {cancha_id}.")
+    """Actualiza parcialmente un socio si existe."""
+    socio = obtener_socio_por_id_db(socio_id)
+    if not socio:
+        raise RecursoNoEncontradoError(f"No existe ningun socio con id {socio_id}.")
 
-    actualizar_cancha_db(cancha_id, datos_actualizacion)
+    nuevo_email = datos_actualizacion.get('email')
+    if nuevo_email and nuevo_email != socio.get('email'):
+        if existe_socio_db(nuevo_email):
+            raise ConflictoNegocioError(f"El email '{nuevo_email}' ya se encuentra registrado.")
+
+    actualizar_socio_db(socio_id, datos_actualizacion)

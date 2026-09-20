@@ -95,7 +95,7 @@ def actualizar_socio_id(socio_id: int):
         # 2. Invocar servicio
         actualizar_socio_service(socio_id, datos_actualizar)
 
-        # 3. Responder 204 No Content sin cuerpo [2, 3]
+        # 3. Responder 204 No Content sin cuerpo
         return "", 204
 
     except RecursoNoEncontradoError as e:

@@ -1,7 +1,7 @@
 from src.repositories.canchas_repository import obtener_canchas_db, existe_deporte_db, crear_cancha_db
 
 class RecursoNoEncontradoError(Exception):
-    """Excepción de negocio cuando no existe una entidad relacionada [4]."""
+    """Excepción de negocio cuando no existe una entidad relacionada"""
     pass
 
 def listar_canchas_service(limit: int, offset: int, id_deporte: int = None, nombre: str = None, techada: bool = None, activa: bool = None):
