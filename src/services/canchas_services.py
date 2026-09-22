@@ -5,7 +5,8 @@ from src.repositories.canchas_repository import (
     obtener_cancha_por_id_db,
     actualizar_cancha_db,
     cancha_tiene_reservas_db,
-    eliminar_cancha_db
+    eliminar_cancha_db,
+    obtener_canchas_disponibles_db
 )
 
 class RecursoNoEncontradoError(Exception):
@@ -80,5 +81,20 @@ def eliminar_cancha_service(cancha_id: int) -> None:
         )
 
     eliminar_cancha_db(cancha_id)
+
+def consultar_canchas_disponibles_service(
+        fecha,
+        hora_inicio,
+  hora_fin,
+        id_deporte=None,
+        techada=None
+):
+        return obtener_canchas_disponibles_db(
+                fecha=fecha,
+                hora_inicio=hora_inicio,
+                hora_fin=hora_fin,
+                id_deporte=id_deporte,
+                techada=techada,
+        )
 
     

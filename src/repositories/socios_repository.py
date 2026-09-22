@@ -1,6 +1,8 @@
 """
    actualizar_socio_db
 """
+import pymysql
+from db.config import DB_CONFIG
 
 def obtener_socios_db(nombre=None, email=None, activo=None, limit=10, offset=0):
     """

@@ -1,4 +1,6 @@
 from flask import Blueprint, request, jsonify
+from datetime import datetime
+
 from src.utils.utils import *
 from src.validators.canchas_validators import *
 from src.services.canchas_services import *
@@ -36,6 +38,74 @@ def listar_canchas():
 
     except Exception as e:
         return generar_respuesta_error("ERROR_INTERNO", "Error del servidor", str(e), 500)
+
+
+@canchas_bp.route('/canchas/disponibles', methods=['GET'])
+def consultar_canchas_disponibles():
+    try:
+        fecha = request.args.get('fecha')
+        hora_inicio = request.args.get('hora_inicio')
+        hora_fin = request.args.get('hora_fin')
+
+        if not fecha or not hora_inicio or not hora_fin:
+            return generar_respuesta_error(
+                "ERROR_VALIDACION", "Parametros obligatorios faltantes",
+                "debe indicar fecha, hora de inicio y hora de fin", 400
+            )
+
+        try:
+            datetime.strptime(fecha, '%Y-%m-%d')
+        except ValueError:
+            return generar_respuesta_error(
+                "ERROR_VALIDACION", "La fecha ingresada es invalida",
+                "debe indicar la fecha en formato YYYY-MM-DD", 400
+            )
+
+        try:
+            inicio = datetime.strptime(f"{fecha} {hora_inicio}", '%Y-%m-%d %H:%M:%S')
+            fin = datetime.strptime(f"{fecha} {hora_fin}", '%Y-%m-%d %H:%M:%S')
+        except ValueError:
+            return generar_respuesta_error(
+                "ERROR_VALIDACION", "La hora ingresada es invalida",
+                "la hora indicada debe tener un formato HH:MM:SS", 400
+            )
+
+        if inicio >= fin:
+            return generar_respuesta_error(
+                "ERROR_VALIDACION", "La hora ingresada es invalida",
+                "la hora de fin no puede ser menor a la hora de inicio", 400
+            )
+
+        id_deporte = request.args.get('id_deporte')
+        techada = request.args.get('techada')
+        if techada is not None and techada.lower() not in ['true', 'false']:
+            return generar_respuesta_error(
+                "ERROR_VALIDACION", "El valor del filtro techada, es invalido",
+                "Techada, debe ser True o False", 400
+            )
+
+        canchas, total = consultar_canchas_disponibles_service(
+            fecha, hora_inicio, hora_fin, id_deporte, techada
+        )
+
+        query_params = {
+            'fecha': fecha,
+            'hora_inicio': hora_inicio,
+            'hora_fin': hora_fin
+        }
+        if id_deporte is not None:
+            query_params['id_deporte'] = id_deporte
+        if techada is not None:
+            query_params['techada'] = techada.lower()
+
+        links = construir_links_hateoas(request.base_url, query_params, total, total, 0)
+        return jsonify({"canchas": canchas, "_links": links}), 200
+
+    except Exception as e:
+        return generar_respuesta_error(
+            "ERROR_INTERNO", "Error al consultar canchas disponibles", str(e), 500
+        )
+
 
 @canchas_bp.route('/canchas', methods=['POST'])
 def crear_cancha():
@@ -119,3 +189,4 @@ def eliminar_cancha(cancha_id: int):
         return generar_respuesta_error("CONFLICTO_NEGOCIO", "Cancha con reservas asociadas", str(e), 409)
     except Exception as e:
         return generar_respuesta_error("ERROR_INTERNO", "Error al eliminar la cancha", str(e), 500)
+
