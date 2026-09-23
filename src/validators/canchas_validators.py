@@ -1,3 +1,8 @@
+import re
+from datetime import datetime, timezone, timedelta
+
+TZ_ARG = timezone(timedelta(hours=-3))
+
 def validar_filtros_listar_canchas(args: dict) -> tuple[dict, str | None]:
     """
     Extrae y valida los parámetros de consulta para el listado de canchas [2, 3, 5].
@@ -123,3 +128,82 @@ def validar_body_actualizar_cancha(data: dict) -> tuple[dict, str | None]:
         return {}, "Debe incluir al menos un campo válido para actualizar."
 
     return datos_limpios, None
+
+def validar_filtros_canchas_disponibles(args: dict) -> tuple[dict, str | None]:
+    """
+    Valida los filtros de consulta e intervalo para el endpoint GET /canchas/disponibles.
+    """
+    fecha = args.get('fecha')
+    hora_inicio = args.get('hora_inicio')
+    hora_fin = args.get('hora_fin')
+
+    # 1. Parámetros obligatorios
+    if not fecha or not hora_inicio or not hora_fin:
+        return {}, "Debe indicar los parámetros obligatorios: 'fecha', 'hora_inicio' y 'hora_fin'."
+
+    # 2. Formato YYYY-MM-DD
+    try:
+        dt_fecha = datetime.strptime(fecha, '%Y-%m-%d').date()
+    except ValueError:
+        return {}, "El parámetro 'fecha' debe tener el formato YYYY-MM-DD."
+
+    # 3. Formato HH:MM:SS y horas en punto
+    patron_hora = r"^([6]\d|2[6-8]):00:00$"
+    if not re.match(patron_hora, hora_inicio):
+        return {}, "El parámetro 'hora_inicio' debe tener el formato HH:00:00 (horas en punto)."
+    if not re.match(patron_hora, hora_fin):
+        return {}, "El parámetro 'hora_fin' debe tener el formato HH:00:00 (horas en punto)."
+
+    try:
+        dt_inicio = datetime.strptime(f"{fecha} {hora_inicio}", '%Y-%m-%d %H:%M:%S').replace(tzinfo=TZ_ARG)
+        dt_fin = datetime.strptime(f"{fecha} {hora_fin}", '%Y-%m-%d %H:%M:%S').replace(tzinfo=TZ_ARG)
+    except ValueError:
+        return {}, "La fecha u horario ingresado no es válido."
+
+    # 4. Validaciones de intervalo
+    if dt_inicio >= dt_fin:
+        return {}, "La 'hora_inicio' debe ser menor que la 'hora_fin'."
+
+    ahora = datetime.now(TZ_ARG)
+    if dt_inicio <= ahora:
+        return {}, "El intervalo consultado debe comenzar en un momento futuro."
+
+    if dt_inicio.hour < 8 or dt_fin.hour > 23:
+        return {}, "El intervalo debe quedar dentro del horario operativo del club (08:00 a 23:00)."
+
+    duracion_horas = (dt_fin - dt_inicio).total_seconds() / 3600.0
+    if duracion_horas not in (1.0, 2.0, 3.0):
+        return {}, "La duración del intervalo debe ser de 1, 2 o 3 horas exactas."
+
+    # 5. Filtros opcionales
+    id_deporte = args.get('id_deporte', type=int)
+
+    techada = None
+    techada_raw = args.get('techada')
+    if techada_raw is not None:
+        if techada_raw.lower() not in ['true', 'false']:
+            return {}, "El filtro 'techada' debe ser 'true' o 'false'."
+        techada = (techada_raw.lower() == 'true')
+
+    # 6. Paginación
+    try:
+        limit = args.get('_limit', 10, type=int)
+        offset = args.get('_offset', 0, type=int)
+    except Exception:
+        return {}, "Los parámetros '_limit' y '_offset' deben ser enteros."
+
+    if limit < 1 or limit > 100:
+        return {}, "El parámetro '_limit' debe ser un entero entre 1 y 100."
+    if offset < 0:
+        return {}, "El parámetro '_offset' debe ser un entero mayor o igual a cero."
+
+    filtros = {
+        'fecha': fecha,
+        'hora_inicio': hora_inicio,
+        'hora_fin': hora_fin,
+        'id_deporte': id_deporte,
+        'techada': techada,
+        'limit': limit,
+        'offset': offset
+    }
+    return filtros, None

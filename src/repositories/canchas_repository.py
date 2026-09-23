@@ -135,11 +135,7 @@ def eliminar_cancha_db(cancha_id: int) -> None:
         conn.close()
 
 def obtener_canchas_disponibles_db(
-    fecha,
-    hora_inicio,
-    hora_fin,
-    id_deporte=None,
-    techada=None
+    fecha, hora_inicio, hora_fin, id_deporte=None, techada=None, limit=10, offset=0
 ):
     connection = pymysql.connect(**DB_CONFIG, cursorclass=pymysql.cursors.DictCursor)
     try:
@@ -152,7 +148,7 @@ def obtener_canchas_disponibles_db(
 
             if techada is not None:
                 where_clauses.append("c.techada = %s")
-                params.append(techada.lower() == 'true' if isinstance(techada, str) else techada)
+                params.append(techada)
 
             inicio = f"{fecha} {hora_inicio}"
             fin = f"{fecha} {hora_fin}"
@@ -162,14 +158,27 @@ def obtener_canchas_disponibles_db(
                 "WHERE rs.id_cancha = c.id AND rs.estado = 'confirmada' "
                 "AND rs.fecha_hora_inicio < %s AND rs.fecha_hora_fin > %s)"
             )
+            where_str = "WHERE " + " AND ".join(where_clauses)
 
-            data_sql = (
-                "SELECT c.id, c.nombre, c.id_deporte, c.precio_hora, c.techada "
-                "FROM canchas c WHERE " + " AND ".join(where_clauses) + " ORDER BY c.id ASC"
-            )
-            cursor.execute(data_sql, params)
+            #Total de canchas disponibles que coinciden con los filtros
+            count_sql = f"SELECT COUNT(*) AS total FROM canchas c {where_str};"
+            cursor.execute(count_sql, params)
+            total = cursor.fetchone()['total']
+
+            #Registros paginados
+            data_sql = f"""
+                SELECT c.id, c.nombre, c.id_deporte, c.precio_hora, c.techada 
+                FROM canchas c 
+                {where_str} 
+                ORDER BY c.id ASC 
+                LIMIT %s OFFSET %s;
+            """
+            cursor.execute(data_sql, params + [limit, offset])
             canchas = cursor.fetchall()
-            return canchas, len(canchas)
+
+            for c in canchas:
+                c['techada'] = bool(c['techada'])
+
+            return canchas, total
     finally:
         connection.close()
-
