@@ -15,6 +15,8 @@ def listar_canchas():
 
         # 2. Invocar servicio
         (canchas, total), err_negocio, status = listar_canchas_service(**filtros)
+        if err_negocio:
+            return generar_respuesta_error("ERROR_NEGOCIO", "Error al listar canchas", err_negocio, status)
 
         # 3. Armar parámetros para HATEOAS
         query_params = {}
@@ -51,6 +53,8 @@ def consultar_canchas_disponibles():
             return generar_respuesta_error("ERROR_VALIDACION", "Parámetro o intervalo inválido", error_msg, 400)
 
         (canchas, total), err_negocio, status = consultar_canchas_disponibles_service(**filtros)
+        if err_negocio:
+            return generar_respuesta_error("ERROR_NEGOCIO", "Error al listar canchas disponibles", err_negocio, status)
 
         query_params = {
             'fecha': filtros['fecha'],

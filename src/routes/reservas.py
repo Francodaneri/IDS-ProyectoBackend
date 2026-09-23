@@ -13,6 +13,8 @@ def listar_reservas():
             return generar_respuesta_error("ERROR_VALIDACION", "Filtro inválido", error_msg, 400)
 
         (reservas, total), err_negocio, status = listar_reservas_service(**filtros)
+        if err_negocio:
+            return generar_respuesta_error("ERROR_NEGOCIO", "Error al listar reservas", err_negocio, status)
 
         query_params = {}
         if filtros['id_cancha'] is not None:

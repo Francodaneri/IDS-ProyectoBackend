@@ -13,6 +13,8 @@ def listar_socios():
             return generar_respuesta_error("ERROR_VALIDACION", "Filtro inválido", error_msg, 400)
 
         (socios, total), err_negocio, status = listar_socios_service(**filtros)
+        if err_negocio:
+            return generar_respuesta_error("ERROR_NEGOCIO", "Error al listar socios", err_negocio, status)
 
         query_params = {}
         if filtros['nombre']:
