@@ -1,5 +1,6 @@
 from datetime import datetime, timezone, timedelta
 from src.repositories.reservas_repository import *
+from src.repositories.bloqueos_repository import existe_bloqueo_superpuesto_db
 
 TZ_ARG = timezone(timedelta(hours=-3))
 
@@ -86,6 +87,12 @@ def crear_reserva_service(id_socio: int, id_cancha: int, fecha_hora_inicio: str,
     if verificar_superposicion_socio_db(id_socio, inicio_db, fin_db):
         return None, "El socio ya tiene una reserva confirmada en ese horario.", 409
 
+    fecha_str = dt_inicio.strftime('%Y-%m-%d')
+    hora_ini_str = dt_inicio.strftime('%H:%M:%S')
+    hora_fin_str = dt_fin.strftime('%H:%M:%S')
+    if existe_bloqueo_superpuesto_db(id_cancha, fecha_str, hora_ini_str, hora_fin_str):
+        return None, "La cancha se encuentra bloqueada por mantenimiento en el horario solicitado.", 409
+    
     precio_hora = cancha['precio_hora']
     precio_total = int(duracion_horas * precio_hora)
 

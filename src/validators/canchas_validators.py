@@ -143,12 +143,12 @@ def validar_filtros_canchas_disponibles(args: dict) -> tuple[dict, str | None]:
 
     # 2. Formato YYYY-MM-DD
     try:
-        dt_fecha = datetime.strptime(fecha, '%Y-%m-%d').date()
+        datetime.strptime(fecha, '%Y-%m-%d').date()
     except ValueError:
         return {}, "El parámetro 'fecha' debe tener el formato YYYY-MM-DD."
 
     # 3. Formato HH:MM:SS y horas en punto
-    patron_hora = r"^([6]\d|2[6-8]):00:00$"
+    patron_hora = r"^([0-1]?[0-9]|2[0-3]):00:00$"
     if not re.match(patron_hora, hora_inicio):
         return {}, "El parámetro 'hora_inicio' debe tener el formato HH:00:00 (horas en punto)."
     if not re.match(patron_hora, hora_fin):

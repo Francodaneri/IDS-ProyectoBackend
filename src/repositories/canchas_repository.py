@@ -150,14 +150,24 @@ def obtener_canchas_disponibles_db(
                 where_clauses.append("c.techada = %s")
                 params.append(techada)
 
+            # Descartar canchas con Reservas Confirmadas superpuestas
             inicio = f"{fecha} {hora_inicio}"
             fin = f"{fecha} {hora_fin}"
-            params.extend([fin, inicio])
             where_clauses.append(
                 "NOT EXISTS (SELECT 1 FROM reservas rs "
                 "WHERE rs.id_cancha = c.id AND rs.estado = 'confirmada' "
                 "AND rs.fecha_hora_inicio < %s AND rs.fecha_hora_fin > %s)"
             )
+            params.extend([fin, inicio])
+            
+            # Descartar canchas con Bloqueos de Mantenimiento superpuestos
+            where_clauses.append(
+                "NOT EXISTS (SELECT 1 FROM bloqueos b "
+                "WHERE b.id_cancha = c.id AND b.fecha = %s "
+                "AND b.hora_inicio < %s AND b.hora_fin > %s)"
+            )
+            params.extend([fecha, hora_fin, hora_inicio])
+
             where_str = "WHERE " + " AND ".join(where_clauses)
 
             #Total de canchas disponibles que coinciden con los filtros
