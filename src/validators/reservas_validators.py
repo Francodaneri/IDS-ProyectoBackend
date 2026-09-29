@@ -94,3 +94,44 @@ def validar_id_recurso(recurso_id: int) -> tuple[bool, str | None]:
     if not isinstance(recurso_id, int) or recurso_id <= 0:
         return False, "El identificador del recurso debe ser un entero positivo."
     return True, None
+
+def validar_body_crear_reserva_recurrente(data: dict) -> tuple[dict, str | None]:
+    if not data or not isinstance(data, dict):
+        return {}, "Debe enviar un objeto JSON válido."
+
+    campos_permitidos = {'id_socio', 'id_cancha', 'fecha_hora_inicio', 'fecha_hora_fin', 'cantidad_semanas'}
+    campos_enviados = set(data.keys())
+
+    desconocidos = campos_enviados - campos_permitidos
+    if desconocidos:
+        return {}, f"Los siguientes campos no están permitidos: {', '.join(desconocidos)}."
+
+    id_socio = data.get('id_socio')
+    id_cancha = data.get('id_cancha')
+    fecha_hora_inicio = data.get('fecha_hora_inicio')
+    fecha_hora_fin = data.get('fecha_hora_fin')
+    cantidad_semanas = data.get('cantidad_semanas')
+
+    if id_socio is None or not isinstance(id_socio, int) or id_socio <= 0:
+        return {}, "El campo 'id_socio' es obligatorio y debe ser un entero positivo."
+
+    if id_cancha is None or not isinstance(id_cancha, int) or id_cancha <= 0:
+        return {}, "El campo 'id_cancha' es obligatorio y debe ser un entero positivo."
+
+    if not fecha_hora_inicio or not isinstance(fecha_hora_inicio, str):
+        return {}, "El campo 'fecha_hora_inicio' es obligatorio y debe ser un texto en formato ISO 8601."
+
+    if not fecha_hora_fin or not isinstance(fecha_hora_fin, str):
+        return {}, "El campo 'fecha_hora_fin' es obligatorio y debe ser un texto en formato ISO 8601."
+
+    if cantidad_semanas is None or not isinstance(cantidad_semanas, int) or cantidad_semanas < 2 or cantidad_semanas > 12:
+        return {}, "El campo 'cantidad_semanas' es obligatorio y debe ser un número entero entre 2 y 12."
+
+    datos_limpios = {
+        'id_socio': id_socio,
+        'id_cancha': id_cancha,
+        'fecha_hora_inicio': fecha_hora_inicio.strip(),
+        'fecha_hora_fin': fecha_hora_fin.strip(),
+        'cantidad_semanas': cantidad_semanas
+    }
+    return datos_limpios, None

@@ -104,3 +104,35 @@ def actualizar_estado_reserva(reserva_id: int):
 
     except Exception as e:
         return generar_respuesta_error("ERROR_INTERNO", "Error al actualizar la reserva", str(e), 500)
+
+@reservas_bp.route('/reservas/recurrentes', methods=['POST'])
+def crear_reservas_recurrentes():
+    try:
+        data = request.get_json()
+        datos_recurrente, error_msg = validar_body_crear_reserva_recurrente(data)
+        if error_msg:
+            return generar_respuesta_error("ERROR_VALIDACION", "Solicitud inválida", error_msg, 400)
+
+        reservas, err_negocio, status, conflictos = crear_reservas_recurrentes_service(**datos_recurrente)
+        if err_negocio:
+            if conflictos:
+                return jsonify({
+                    "errors": [
+                        {
+                            "code": "CONFLICTO_NEGOCIO",
+                            "message": "Conflicto en la serie de reservas recurrentes",
+                            "level": "error",
+                            "description": err_negocio
+                        }
+                    ],
+                    "conflictos": conflictos
+                }), status
+
+            code = "RECURSO_NO_ENCONTRADO" if status == 404 else "CONFLICTO_NEGOCIO"
+            msg = "Recurso no encontrado" if status == 404 else "Conflicto al crear la reserva recurrente"
+            return generar_respuesta_error(code, msg, err_negocio, status)
+
+        return jsonify({"reservas": reservas}), 201
+
+    except Exception as e:
+        return generar_respuesta_error("ERROR_INTERNO", "Error al crear las reservas recurrentes", str(e), 500)

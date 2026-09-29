@@ -140,3 +140,36 @@ def actualizar_estado_reserva_db(id_reserva: int, nuevo_estado: str):
             connection.commit()
     finally:
         connection.close()
+
+def crear_reservas_batch_db(reservas_data: list[dict]) -> list[int]:
+    """
+    Inserta múltiples reservas de forma atómica dentro de una única transacción SQL.
+    'reservas_data' es una lista de diccionarios con las propiedades de cada reserva.
+    """
+    connection = get_db_connection()
+    try:
+        connection.begin()
+        ids = []
+        with connection.cursor() as cursor:
+            sql = """
+                INSERT INTO reservas (id_socio, id_cancha, fecha_hora_inicio, fecha_hora_fin, estado, precio_hora, precio_total)
+                VALUES (%s, %s, %s, %s, %s, %s, %s);
+            """
+            for r in reservas_data:
+                cursor.execute(sql, (
+                    r['id_socio'],
+                    r['id_cancha'],
+                    r['inicio'],
+                    r['fin'],
+                    r.get('estado', 'confirmada'),
+                    r['precio_hora'],
+                    r['precio_total']
+                ))
+                ids.append(cursor.lastrowid)
+        connection.commit()
+        return ids
+    except Exception:
+        connection.rollback()
+        raise
+    finally:
+        connection.close()
